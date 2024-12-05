@@ -26,7 +26,21 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        // create two lists
+        val list1 = mutableListOf<Int>();
+        val list2 = mutableListOf<Int>();
+        for (line in input) {
+            val both = line.split(" ")
+                .filter { it != "" }
+                .map(String::toInt)
+                .toList()
+            list1.add(both[0])
+            list2.add(both[1])
+        }
+        // for each item in list 1, multiply it by:
+        // the count of how many times this number appears in list 2
+        // sum
+        return list1.sumOf { it * list2.count { x -> x == it } }
     }
 
     // Read the input from the `src/Day01.txt` file.
