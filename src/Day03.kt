@@ -17,12 +17,12 @@ fun main() {
         var doMul = true;
         for (string in input) {
             for (element in regex.findAll(string)) {
-                if (element.groupValues[0] == "do()") {
-                    doMul = true
-                } else if (element.groupValues[0] == "don't()") {
-                    doMul = false
-                } else if (doMul) {
-                    sum += (element.groupValues[2].toInt() * element.groupValues[3].toInt())
+                when (element.groupValues[0]) {
+                    "do()" -> doMul = true
+                    "don't()" -> doMul = false
+                    else -> if (doMul) {
+                        sum += element.groupValues[2].toInt() * element.groupValues[3].toInt()
+                    }
                 }
             }
         }
