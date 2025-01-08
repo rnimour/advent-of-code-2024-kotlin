@@ -15,12 +15,12 @@ fun main() {
             LEFT -> Pair(guard.position.first, guard.position.second - 1)
         }
         var visited = 0
-        if (grid[N-1-newGuardPosition.first][newGuardPosition.second] == Field.BLOCKED) {
+        if (grid[newGuardPosition.first][newGuardPosition.second] == Field.BLOCKED) {
             guard.direction = guard.direction.next()
             return walk()
         }
-        if (grid[N-1-guard.position.first][guard.position.second] != VISITED) {
-            grid[N-1-guard.position.first][guard.position.second] = VISITED
+        if (grid[guard.position.first][guard.position.second] != VISITED) {
+            grid[guard.position.first][guard.position.second] = VISITED
             visited = 1
         }
         guard.position = newGuardPosition
@@ -53,27 +53,29 @@ fun main() {
 }
 
 private fun printGrid() {
-    // grid[0][0] is the bottom left corner
-    // grid[N-1][0] is the top left corner (printed first)
-    for (i in N-1 downTo 0) {
+    // grid[0][0] is the top left corner (printed first)
+    // grid[N-1][0] is the bottom left corner
+    for (i in 0..<N) {
         for (j in 0..<N) {
-            print(when(grid[i][j]) {
-                Field.EMPTY -> '.'
-                Field.BLOCKED -> '#'
-                VISITED -> 'X'
-                Field.GUARD -> '^'
-                null -> TODO()
-            })
+            print(
+                when (grid[i][j]) {
+                    Field.EMPTY -> '.'
+                    Field.BLOCKED -> '#'
+                    VISITED -> 'X'
+                    Field.GUARD -> '^'
+                    null -> TODO()
+                }
+            )
         }
         println()
     }
-    println()
+    repeat(8) { println() }
 }
 
 fun readGrid(input: List<String>) =
     input.forEachIndexed { index, line ->
         line.forEachIndexed { index2, c ->
-            grid[N-1-index][index2] = when (c) {
+            grid[index][index2] = when (c) {
                 '.' -> Field.EMPTY
                 '#' -> Field.BLOCKED
                 '^' -> Field.GUARD.also { guard.position = Pair(index, index2) }
@@ -98,12 +100,6 @@ enum class Direction {
     RIGHT;
 
     fun next() =
-        // when (this) {
-        //     UP -> LEFT
-        //     RIGHT -> UP
-        //     DOWN -> RIGHT
-        //     LEFT -> DOWN
-        // }
         when (this) {
             UP -> RIGHT
             RIGHT -> DOWN
