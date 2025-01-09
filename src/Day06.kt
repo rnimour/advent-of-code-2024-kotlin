@@ -3,6 +3,7 @@ import Field.VISITED
 
 val N = 130
 val grid = Array(N) { arrayOfNulls<Field>(N) }
+val gridDirections = Array(N) { Array<MutableSet<Direction>>(N, init = { _ -> mutableSetOf() }) }
 var guard = Guard(Pair(0, 0), UP)
 
 fun main() {
@@ -22,6 +23,9 @@ fun main() {
         if (grid[guard.position.first][guard.position.second] != VISITED) {
             grid[guard.position.first][guard.position.second] = VISITED
             visited = 1
+        }
+        if (!gridDirections[guard.position.first][guard.position.second].add(guard.direction)) {
+            throw LoopException()
         }
         guard.position = newGuardPosition
         return visited
@@ -45,26 +49,22 @@ fun main() {
         for (i in 0..<N) {
             for (j in 0..<N) {
                 readGrid(input)
+                gridDirections.forEach { it.forEach { it.clear() } }
                 if (grid[i][j] == Field.EMPTY) {
                     grid[i][j] = Field.BLOCKED // add an obstacle
-                    var steps = 0
-                    val maxSteps = N * N * 30 // oh my god how terrible
                     try {
-                        while (steps++ < maxSteps){
+                        while (true) {
                             walk()
                         }
-                        // still not escaped, must be in a loop
-                        // println("I couldn't escape with an obstacle on $i,$j")
-                        squaresWhichResultInLoop++
                     } catch (e: ArrayIndexOutOfBoundsException) {
                         /* guard escaped, so */ continue
                     } catch (_: LoopException) {
-
+                        squaresWhichResultInLoop++
                     }
                 }
             }
         }
-        return squaresWhichResultInLoop
+        return squaresWhichResultInLoop // 1770
     }
 
     val input = readInput("Day06")
@@ -105,6 +105,7 @@ fun readGrid(input: List<String>) =
                     guard.position = Pair(index, index2)
                     guard.direction = UP
                 }
+
                 else -> throw Exception("Unknown field")
             }
         }
