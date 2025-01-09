@@ -40,8 +40,31 @@ fun main() {
         }
     }
 
-    fun part2(): Int {
-        return 0
+    fun part2(input: List<String>): Int {
+        var squaresWhichResultInLoop = 0
+        for (i in 0..<N) {
+            for (j in 0..<N) {
+                readGrid(input)
+                if (grid[i][j] == Field.EMPTY) {
+                    grid[i][j] = Field.BLOCKED // add an obstacle
+                    var steps = 0
+                    val maxSteps = N * N * 30 // oh my god how terrible
+                    try {
+                        while (steps++ < maxSteps){
+                            walk()
+                        }
+                        // still not escaped, must be in a loop
+                        // println("I couldn't escape with an obstacle on $i,$j")
+                        squaresWhichResultInLoop++
+                    } catch (e: ArrayIndexOutOfBoundsException) {
+                        /* guard escaped, so */ continue
+                    } catch (_: LoopException) {
+
+                    }
+                }
+            }
+        }
+        return squaresWhichResultInLoop
     }
 
     val input = readInput("Day06")
@@ -49,7 +72,7 @@ fun main() {
     printGrid()
     // return
     part1().println()
-    part2().println()
+    part2(input).println()
 }
 
 private fun printGrid() {
@@ -78,13 +101,18 @@ fun readGrid(input: List<String>) =
             grid[index][index2] = when (c) {
                 '.' -> Field.EMPTY
                 '#' -> Field.BLOCKED
-                '^' -> Field.GUARD.also { guard.position = Pair(index, index2) }
+                '^' -> Field.EMPTY.also {
+                    guard.position = Pair(index, index2)
+                    guard.direction = UP
+                }
                 else -> throw Exception("Unknown field")
             }
         }
     }
 
 class Guard(var position: Pair<Int, Int>, var direction: Direction)
+
+class LoopException : RuntimeException()
 
 enum class Field {
     EMPTY,
