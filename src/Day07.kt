@@ -1,5 +1,4 @@
-import Operation.ADDITION
-import Operation.MULTIPLICATION
+import Operation.*
 
 fun main() {
 
@@ -16,7 +15,15 @@ fun main() {
     }
 
     fun part2(input: List<String>): Long {
-        return 0
+        var sumOfCalibrations = 0L
+        for (line in input) {
+            val calibrationValue = line.split(":")[0].toLong()
+            val numbers = line.split(" ").drop(1).map(String::toLong)
+            if (calibrationValue.canBeMadeFrom(numbers, true)) {
+                sumOfCalibrations += calibrationValue
+            }
+        }
+        return sumOfCalibrations
     }
 
     val input = readInput("Day07")
@@ -28,18 +35,23 @@ fun main() {
     part2(input).println()
 }
 
-private fun Long.canBeMadeFrom(numbers: List<Long>): Boolean {
-    // for combinations of numbers and operations
-    for (combination in getPossibleCombinationsOfOperations(numbers.size)) {
+private fun Long.canBeMadeFrom(numbers: List<Long>, allowConcatenation: Boolean = false): Boolean {
+    val possibleCombinations =
+        if (allowConcatenation)
+            getPossibleCombinationsOfOperationsWithConcatenation(numbers.size)
+        else
+            getPossibleCombinationsOfOperations(numbers.size)
+
+    for (combination in possibleCombinations) {
         // println("Combination: $combination")
-        var result = if (combination[0] == ADDITION) 0L else 1L
+        var result = if (combination[0] == MULTIPLICATION) 1L else 0L
         for ((index, operation) in combination.withIndex()) {
             // println("index $index, operation $operation")
             // println("Applying $operation on $result and ${numbers[index]}")
             result = operation.apply(result, numbers[index])
         }
         if (result == this) {
-            println("$combination on $numbers makes $this")
+            // println("$combination on $numbers makes $this")
             return true
         }
         // else {
@@ -50,21 +62,32 @@ private fun Long.canBeMadeFrom(numbers: List<Long>): Boolean {
     return false
 }
 
-fun getPossibleCombinationsOfOperations(size: Int): Sequence<List<Operation>> {
+fun getPossibleCombinationsOfOperations(size: Int): List<List<Operation>> {
     return (1 until size)
         .fold(listOf(listOf(ADDITION), listOf(MULTIPLICATION)))
         { combinationsList, _ ->
             combinationsList.flatMap { listOf(it + ADDITION, it + MULTIPLICATION) }
         }
-        .asSequence() // todo actually make it a sequence
+        // todo actually make it a sequence
+}
+
+fun getPossibleCombinationsOfOperationsWithConcatenation(size: Int): List<List<Operation>> {
+    return (1 until size)
+        .fold(listOf(listOf(ADDITION), listOf(MULTIPLICATION), listOf(CONCATENATION)))
+        { combinationsList, _ ->
+            combinationsList.flatMap { listOf(it + ADDITION, it + MULTIPLICATION, it + CONCATENATION) }
+        }
+        // todo actually make it a sequence
 }
 
 enum class Operation {
     ADDITION,
-    MULTIPLICATION;
+    MULTIPLICATION,
+    CONCATENATION;
 
     fun apply(a: Long, b: Long): Long = when (this) {
         ADDITION -> a + b
         MULTIPLICATION -> a * b
+        CONCATENATION -> "$a$b".toLong()
     }
 }
