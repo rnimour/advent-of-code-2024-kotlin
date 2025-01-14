@@ -3,7 +3,27 @@ private val grid = Array(N) { Array(N) { Pair('.', false) } } // antenna, antino
 private val charsInGrid = mutableMapOf<Char, MutableList<Pair<Int, Int>>>()
 
 private operator fun Pair<Int, Int>.minus(antenna2: Pair<Int, Int>): Pair<Int, Int> =
-    Pair(2 * this.first - antenna2.first, 2 * this.second - antenna2.second)
+    Pair(this.first - antenna2.first, this.second - antenna2.second)
+
+private operator fun Pair<Int, Int>.plus(antenna2: Pair<Int, Int>): Pair<Int, Int> =
+    Pair(this.first + antenna2.first, this.second + antenna2.second)
+
+private operator fun Int.times(antenna: Pair<Int, Int>): Pair<Int, Int> =
+    Pair(this * antenna.first, this * antenna.second)
+
+private operator fun Pair<Int, Int>.times(antenna2: Pair<Int, Int>): Collection<Pair<Int, Int>> {
+    val antinodes = mutableListOf<Pair<Int, Int>>()
+    val direction = antenna2 - this
+    var antinode = this + direction
+    var i = 1
+    while (!outOfBounds(antinode.first, antinode.second)) {
+        antinodes.add(antinode)
+        antinode = this + (++i * direction)
+    }
+    return antinodes
+}
+
+fun outOfBounds(x: Int, y: Int): Boolean = x < 0 || x >= N || y < 0 || y >= N
 
 fun main() {
 
@@ -25,16 +45,33 @@ fun main() {
         val antinodes = mutableListOf<Pair<Int, Int>>()
         for ((index, antenna1) in coordinates.withIndex()) {
             for (antenna2 in coordinates.drop(index + 1)) {
-                antinodes.add(antenna1 - antenna2)
-                antinodes.add(antenna2 - antenna1)
+                antinodes.add(antenna1 + (antenna1 - antenna2))
+                antinodes.add(antenna2 + (antenna2 - antenna1))
             }
         }
         for (antinode in antinodes) {
             val x = antinode.first
             val y = antinode.second
-            if (x < 0 || x >= N || y < 0 || y >= N) {
+            if (outOfBounds(x, y)) {
                 continue
             }
+            grid[x][y] = Pair(grid[x][y].first, true) // yuck
+        }
+    }
+
+    fun addSuperAntiNodesOf(coordinates: List<Pair<Int, Int>>) {
+        val antinodes = mutableListOf<Pair<Int, Int>>()
+        for (antenna1 in coordinates) {
+            for (antenna2 in coordinates) {
+                if (antenna1 == antenna2) {
+                    continue
+                }
+                antinodes.addAll(antenna1 * antenna2)
+            }
+        }
+        for (antinode in antinodes) {
+            val x = antinode.first
+            val y = antinode.second
             grid[x][y] = Pair(grid[x][y].first, true) // yuck
         }
     }
@@ -50,12 +87,21 @@ fun main() {
         return grid.sumOf { row -> row.count { it.second } }
     }
 
+
     fun part2(input: List<String>): Int {
-        return 0
+        charsInGrid.clear()
+        readGrid(input)
+        for (entry in charsInGrid) {
+            addSuperAntiNodesOf(entry.value)
+        }
+        printGrid()
+
+        return grid.sumOf { row -> row.count { it.second } }
     }
 
     val input = readInput("Day08")
     part1(input).println()
+    println()
     part2(input).println()
 }
 
