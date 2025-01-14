@@ -1,10 +1,10 @@
 import Direction.*
 import Field.VISITED
 
-val N = 130
-val grid = Array(N) { arrayOfNulls<Field>(N) }
-val gridDirections = Array(N) { Array<MutableSet<Direction>>(N, init = { _ -> mutableSetOf() }) }
-var guard = Guard(Pair(0, 0), UP)
+private val N = 130
+private val grid = Array(N) { arrayOfNulls<Field>(N) }
+private val gridDirections = Array(N) { Array<MutableSet<Direction>>(N, init = { _ -> mutableSetOf() }) }
+private var guard = Guard(Pair(0, 0), UP)
 
 fun main() {
 

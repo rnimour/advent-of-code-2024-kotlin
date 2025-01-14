@@ -8,7 +8,13 @@ fun main() {
         return 0
     }
 
-    val input = readInput("Day0X")
+    val puzzleInput = "Day0X"
+    @Suppress("KotlinConstantConditions")
+    if (puzzleInput == "Day0X") {
+        println("Remember to set the puzzle input.")
+        return
+    }
+    val input = readInput(puzzleInput)
     part1(input).println()
     part2(input).println()
 }
