@@ -2,6 +2,7 @@ private val N = 10000
 private val GAP = (-1).toShort() // use magic value -1 as value indicating gap
 private val compressedData = ShortArray(N)
 private val gaps = ShortArray(N)
+private val gapStartingIndices = IntArray(N)
 private val unCompressedData = ShortArray(N * 10) // 100k is not so short though... ha ha ha
 private var lastDataIndex = N * 10 - 1
 private var firstGapIndex = 0
@@ -16,6 +17,7 @@ fun main() {
                 unCompressedData.fill((index / 2).toShort(), dataIndex, dataIndex + c.digitToShort())
             } else {
                 gaps[index / 2] = c.digitToShort()
+                gapStartingIndices[index / 2] = dataIndex
                 unCompressedData.fill(GAP, dataIndex, dataIndex + c.digitToShort())
             }
             dataIndex += c.digitToShort()
@@ -81,8 +83,39 @@ fun main() {
         return checksum()
     }
 
+    fun checksumAllowGaps(): Long {
+        var sum = 0L
+        unCompressedData.forEachIndexed { index, value ->
+            // 0: initialized value, -1: gap
+            if (value > 0) {
+                sum += index * value
+            }
+        }
+        return sum
+    }
+
+    fun compressDataChunks() {
+        // begin with last chunk
+        outerLoop@ for (data in compressedData.reversed().withIndex()) {
+            for (gap in gaps.withIndex()) {
+                if (gap.value < data.value) {
+                    continue // gap not large enough
+                }
+                // gap large enough: move one chunk
+                unCompressedData.fill(data.value, gapStartingIndices[gap.index], gapStartingIndices[gap.index] + data.value)
+                // and update gaps data
+                gaps[gap.index] = (gap.value - data.value).toShort()
+                gapStartingIndices[gap.index] -= data.value.toInt()
+                continue@outerLoop
+            }
+        }
+    }
+
     fun part2(input: List<String>): Long {
-        return 0
+        unCompressedData.fill(0) // reset
+        readDataAndGaps(input)
+        compressDataChunks()
+        return checksumAllowGaps()
     }
 
     val input = readInput("Day09")
