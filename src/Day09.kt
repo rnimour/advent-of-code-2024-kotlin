@@ -79,10 +79,6 @@ fun main() {
         readDataAndGaps(input)
         compressData()
         return checksum()
-        // the answer is between
-        // 6339935276572 and
-        // 6340985277474 🥲
-        // 6340197768906 can be the answer
     }
 
     fun part2(input: List<String>): Long {
